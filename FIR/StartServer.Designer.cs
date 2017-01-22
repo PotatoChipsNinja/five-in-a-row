@@ -85,6 +85,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "StartServer";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Load += new System.EventHandler(this.StartServer_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
