@@ -181,6 +181,7 @@ namespace FIR
                 timer.Tick += Timer_Tick;
                 timer.Start();
             }));
+            textBox2.AppendText("----------棋局已重置----------\n");
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -423,6 +424,11 @@ namespace FIR
             }
         }
 
+        public void ChatRecv(string ChatStr)
+        {
+            textBox2.AppendText("接收：" + ChatStr + "\n");
+        }
+
         public void Set(Point input, bool send = true)
         {
             if (GameOver != Piece.None)
@@ -516,6 +522,27 @@ namespace FIR
         private void button4_Click(object sender, EventArgs e)
         {
             new About().ShowDialog(this);
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            if (Network.Running)
+            {
+                if (textBox1.Text == "")
+                {
+                    MessageBox.Show(this, "发送文本不能为空.", string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    Network.Send(MessageType.Chat, 0, 0, textBox1.Text);
+                    textBox2.AppendText("发送：" + textBox1.Text + "\n");
+                    textBox1.Text = "";
+                }
+            }
+            else
+            {
+                MessageBox.Show(this, "请先建立连接.", string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
     }
 }

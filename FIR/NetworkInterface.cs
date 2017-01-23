@@ -128,10 +128,11 @@ namespace FIR
             }
         }
 
-        public void Send(MessageType type, int x = 0, int y = 0)
+        public void Send(MessageType type, int x = 0, int y = 0, string chatStr = "")
         {
-            byte[] head = new byte[StreamHead.HeadLength];
-            StreamHead.WriteHead(head, type, x, y);
+            int length = 16 + chatStr.Length * 2;
+            byte[] head = new byte[length];
+            StreamHead.WriteHead(head, type, x, y, chatStr);
 
             lock (messages)
             {
@@ -145,13 +146,27 @@ namespace FIR
             {
                 MessageType type;
                 int x, y;
+                string ChatStr;
 
-                byte[] head = new byte[StreamHead.HeadLength];
-                byte[] temp = new byte[StreamHead.HeadLength];
+                byte[] getLength = new byte[4];
+                int alllength;
+                try
+                {
+                    alllength = socket.Receive(getLength, 4, SocketFlags.None);
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    goto End;
+                }
+                alllength = BitConverter.ToInt32(getLength, 0);
+                byte[] head = new byte[alllength];
+                byte[] temp = new byte[alllength];
+                Array.Copy(getLength, head, 4);
 
                 try
                 {
-                    int sub = StreamHead.HeadLength;
+                    int sub = alllength - 4;
                     int length;
                     while (true)
                     {
@@ -172,7 +187,7 @@ namespace FIR
                             sub -= length;
                         }
                     }
-                    StreamHead.Read(head, out type, out x, out y);
+                    StreamHead.Read(head, out type, out x, out y, out ChatStr);
 
                     if (type == MessageType.Reset)
                     {
@@ -196,6 +211,10 @@ namespace FIR
                     if (type == MessageType.Set)
                     {
                         Owner.Set(new Point(x, y), false);
+                    }
+                    if (type == MessageType.Chat)
+                    {
+                        Owner.ChatRecv(ChatStr);
                     }
                 }
                 catch (Exception e)
